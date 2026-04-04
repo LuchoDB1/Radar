@@ -12,7 +12,8 @@ export type Source =
   | "VentureBeat"
   | "DeepMind"
   | "OpenAI"
-  | "Hugging Face";
+  | "Hugging Face"
+  | "MIT Tech Review";
 
 export interface NewsItem {
   id: string;

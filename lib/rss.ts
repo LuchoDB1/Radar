@@ -8,6 +8,7 @@ const FEEDS: RSSFeed[] = [
   { source: "DeepMind",     url: "https://deepmind.google/blog/rss.xml" },
   { source: "OpenAI",       url: "https://openai.com/news/rss.xml" },
   { source: "Hugging Face", url: "https://huggingface.co/blog/feed.xml" },
+  { source: "MIT Tech Review", url: "https://www.technologyreview.com/feed/" },
 ];
 
 function extractTag(xml: string, tag: string): string {
