@@ -13,7 +13,7 @@ export default async function Home() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="live-dot w-2 h-2 rounded-full bg-sky-400 inline-block" />
-              <h1 className="text-base font-bold text-white tracking-tight">Radar</h1>
+              <h1 className="text-base font-bold text-white tracking-tight">◈ Radar AI</h1>
             </div>
             <span className="text-slate-600 text-sm hidden sm:block">|</span>
             <span className="text-slate-500 text-xs hidden sm:block">AI News Feed</span>

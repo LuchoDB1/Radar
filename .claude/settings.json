@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/debernardiluciano/proyectos/radar/.claude/hooks/pre-commit-lint.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/debernardiluciano/proyectos/radar/.claude/hooks/post-edit-log.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/debernardiluciano/proyectos/radar/.claude/hooks/stop-uncommitted.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
