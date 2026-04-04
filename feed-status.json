@@ -1,0 +1,42 @@
+{
+  "checked_at": "2026-04-04T23:42:21Z",
+  "feeds": [
+    {
+      "source": "The Verge AI",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
+      "status": 0,
+      "ok": false
+    },
+    {
+      "source": "Ars Technica",
+      "url": "https://feeds.arstechnica.com/arstechnica/technology-lab",
+      "status": 0,
+      "ok": false
+    },
+    {
+      "source": "VentureBeat",
+      "url": "https://feeds.feedburner.com/venturebeat/SZYF",
+      "status": 0,
+      "ok": false
+    },
+    {
+      "source": "DeepMind",
+      "url": "https://deepmind.google/blog/rss.xml",
+      "status": 0,
+      "ok": false
+    },
+    {
+      "source": "OpenAI",
+      "url": "https://openai.com/news/rss.xml",
+      "status": 0,
+      "ok": false
+    },
+    {
+      "source": "Hugging Face",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "status": 0,
+      "ok": false
+    }
+  ],
+  "all_ok": false
+}
