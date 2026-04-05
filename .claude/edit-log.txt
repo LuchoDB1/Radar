@@ -1,0 +1,4 @@
+2026-04-04 20:25:22 | session=unknown | /Users/debernardiluciano/proyectos/radar/components/NewsCard.tsx
+2026-04-04 20:25:31 | session=unknown | /Users/debernardiluciano/proyectos/radar/components/NewsCard.tsx
+2026-04-04 20:53:42 | session=unknown | /Users/debernardiluciano/proyectos/radar/.claude/worktrees/feature-mit-source/lib/rss.ts
+2026-04-04 20:53:52 | session=unknown | /Users/debernardiluciano/proyectos/radar/.claude/worktrees/feature-mit-source/types/index.ts
