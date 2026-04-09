@@ -27,15 +27,14 @@ export async function GET(req: NextRequest) {
     categoria:        item.category,
   }));
 
-  const { error, count } = await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from("noticias")
-    .upsert(rows, { onConflict: "url", ignoreDuplicates: true })
-    .select("id", { count: "exact", head: true });
+    .upsert(rows, { onConflict: "url", ignoreDuplicates: true });
 
   if (error) {
     console.error("Supabase upsert error:", error.message);
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
 
-  return Response.json({ ok: true, fetched: news.length, inserted: count ?? 0 });
+  return Response.json({ ok: true, fetched: news.length });
 }
