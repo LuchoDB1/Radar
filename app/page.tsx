@@ -1,8 +1,8 @@
-import { getAllNews } from "@/lib/rss";
+import { getAllNewsFromDB } from "@/lib/db";
 import NewsFeed from "@/components/NewsFeed";
 
 export default async function Home() {
-  const news = await getAllNews();
+  const news = await getAllNewsFromDB();
 
   return (
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(56,189,248,0.06) 0%, transparent 60%), #060910" }}>
