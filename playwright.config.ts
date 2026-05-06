@@ -66,10 +66,12 @@ export default defineConfig({
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // webkit deshabilitado: Playwright >=1.59 dropeó soporte para macOS 13.
+    // Reactivar cuando el owner upgrade a macOS 14+ o cuando radar corra en CI Linux.
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
     // Mobile viewports (descomentar si el proyecto tiene UI mobile)
     // {
     //   name: 'mobile-chrome',
