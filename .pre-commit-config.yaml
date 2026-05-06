@@ -1,0 +1,59 @@
+# Radar — pre-commit config (adaptado del template SDD para stack TS-only)
+# Activar con: pre-commit install
+# Ver template canónico en: ~/proyectos/spec-driven-development/templates/guardrails/.pre-commit-config.yaml
+
+repos:
+  # === Hooks transversales (siempre activos) ===
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: detect-private-key
+      - id: mixed-line-ending
+
+  # === Detección de secretos (CRÍTICO — no remover) ===
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: 'package-lock\.json|node_modules|\.next|tsconfig\.tsbuildinfo'
+
+  # === TypeScript / JavaScript ===
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint (Next.js strict + flat config)
+        entry: npx eslint --max-warnings 0
+        language: system
+        types_or: [javascript, jsx, ts, tsx]
+        require_serial: false
+
+      - id: tsc
+        name: TypeScript strict typecheck
+        entry: npx tsc --noEmit
+        language: system
+        types: [ts]
+        pass_filenames: false
+
+  # === Smoke E2E (Playwright) ===
+  # Tests marcados con @smoke. Deben correr en <30s.
+  - repo: local
+    hooks:
+      - id: playwright-smoke
+        name: Playwright smoke tests
+        entry: npx playwright test --grep @smoke --reporter=line
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+# Hooks comentados hasta que existan los componentes:
+# - prettier: radar no tiene prettier instalado. Si se agrega, descomentar acá y agregar a deps.
+# - tests-critical: radar todavía no tiene unit tests. Activar cuando se sumen (Vitest / Jest).
+# - bloque Python: N/A (stack TS-only).
