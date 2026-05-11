@@ -54,11 +54,14 @@ smoke:
 	else \
 	  echo "❌ smoke FAIL"; cat /tmp/radar-smoke.log; STATUS=1; \
 	fi; \
-	kill $$(cat /tmp/radar-smoke.pid) 2>/dev/null; \
-	PORT_PID=$$(lsof -ti :3000 2>/dev/null); \
-	if [ -n "$$PORT_PID" ]; then kill -TERM $$PORT_PID 2>/dev/null || true; fi; \
+	NPM_PID=$$(cat /tmp/radar-smoke.pid); \
+	pkill -TERM -P $$NPM_PID 2>/dev/null || true; \
+	kill -TERM $$NPM_PID 2>/dev/null || true; \
+	sleep 2; \
+	pkill -KILL -P $$NPM_PID 2>/dev/null || true; \
+	kill -KILL $$NPM_PID 2>/dev/null || true; \
 	for i in 1 2 3 4 5; do \
-	  if ! lsof -i :3000 -t >/dev/null 2>&1; then break; fi; \
+	  if ! (lsof -i :3000 -t 2>/dev/null | grep -q .); then break; fi; \
 	  sleep 1; \
 	done; \
 	rm -f /tmp/radar-smoke.pid; exit $$STATUS
