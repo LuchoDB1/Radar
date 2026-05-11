@@ -38,33 +38,18 @@ test-critical:
 	@echo "⚠️  No hay test framework configurado todavía."
 	@exit 0
 
-# Smoke: arranca next dev por 5s y verifica que responde 200 en /.
-# Cleanup robusto: matar `npm` + child `next dev` por nombre + esperar
-# que el puerto 3000 se libere antes de salir. Sin esto, el target
-# siguiente (`e2e-smoke`) que invoca Playwright con `reuseExistingServer:
-# !isCI` (false en CI) choca con un proceso zombi en :3000 y falla con
-# "address already in use". Detectado en CI run 25689237593 (radar
-# 2026-05-11).
+# Smoke: arranca next dev, espera que responda 200 en /, mata el server limpio.
+# Usa `start-server-and-test` (3rd party) para coordinar el lifecycle del
+# server externamente — maneja el cleanup del process tree robustamente,
+# incluyendo grandchildren spawned por Next.js Turbopack. Esto reemplaza
+# el cleanup manual con backgrounding + pkill + lsof que era frágil en
+# Ubuntu CI (4 iteraciones de fix sin éxito 2026-05-11).
+#
+# Sintaxis: start-server-and-test <start-cmd> <ready-url> <test-cmd>
 smoke:
-	@echo "→ smoke: arrancando next dev por 5s..."
-	@(npm run dev > /tmp/radar-smoke.log 2>&1 & echo $$! > /tmp/radar-smoke.pid); \
-	sleep 5; \
-	if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q 200; then \
-	  echo "✅ smoke OK"; STATUS=0; \
-	else \
-	  echo "❌ smoke FAIL"; cat /tmp/radar-smoke.log; STATUS=1; \
-	fi; \
-	NPM_PID=$$(cat /tmp/radar-smoke.pid); \
-	pkill -TERM -P $$NPM_PID 2>/dev/null || true; \
-	kill -TERM $$NPM_PID 2>/dev/null || true; \
-	sleep 2; \
-	pkill -KILL -P $$NPM_PID 2>/dev/null || true; \
-	kill -KILL $$NPM_PID 2>/dev/null || true; \
-	for i in 1 2 3 4 5; do \
-	  if ! (lsof -i :3000 -t 2>/dev/null | grep -q .); then break; fi; \
-	  sleep 1; \
-	done; \
-	rm -f /tmp/radar-smoke.pid; exit $$STATUS
+	@echo "→ smoke: arrancando next dev + curl al boot..."
+	@npx start-server-and-test "npm run dev" http://localhost:3000 \
+	  "curl -sf -o /dev/null -w '%{http_code}\n' http://localhost:3000 | grep -q 200 && echo '✅ smoke OK'"
 
 e2e:
 	npx playwright test

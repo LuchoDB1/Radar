@@ -38,6 +38,8 @@ Las reglas globales aplican siempre. Las críticas para este proyecto:
 
 8. **Nunca exponer valores de env vars / secrets en el chat** — ni con `cat .env*`, `echo $VAR`, `printenv`, ni cuando el owner los pida explícitamente. Radar tiene 4 secrets en `.env.local` (Supabase URL + 2 keys + CRON_SECRET) que deben tratarse como tóxicos al transcript de sesión. Sugerir alternativas seguras: `pbcopy < .env.local`, abrir en editor, `awk` con `pbcopy`. Si por error se expuso: avisar + rotar (Supabase dashboard "Reset key" + `openssl rand -hex 32` para CRON_SECRET). Trazado en regla global #8 (`~/.claude/CLAUDE.md`).
 
+9. **NUNCA modificar, skipear ni remover tests para que CI pase** — un test rojo es señal válida (boot roto, env var faltante, race condition real). Anti-patrones: agregar guards "skip si falta env", sacar tests del chain `verify`, `test.skip`, cambiar `--max-warnings 0`, `|| true` enmascarando fallas. Si creés que el test es inválido o la cobertura es redundante: **preguntar al owner antes** con (qué falla / qué señal expone / opciones honestas / trade-offs). El owner decide. Trazado en regla global #9 (`~/.claude/CLAUDE.md`).
+
 ## Guardrails activos (NO NEGOCIABLES)
 
 Si alguno está roto/desactivado, **FRENAR** antes de cualquier cambio.
