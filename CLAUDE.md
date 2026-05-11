@@ -24,7 +24,7 @@ Modelo completo en [MODEL.md](MODEL.md).
 
 ## Reglas operativas (heredadas del CLAUDE.md global)
 
-Las 7 reglas de eficiencia globales aplican siempre. Las críticas para este proyecto:
+Las reglas globales aplican siempre. Las críticas para este proyecto:
 
 1. **Contexto primero** — leer `MODEL.md` y `docs/architecture.md` antes de tocar componentes.
 2. **Sin preambles ni resumen final** — directo al trabajo.
@@ -33,6 +33,10 @@ Las 7 reglas de eficiencia globales aplican siempre. Las críticas para este pro
 5. **Sin adulación** — directo al trabajo.
 6. **Paralelizar tool calls** — leer N archivos independientes en un solo mensaje.
 7. **No duplicar código en respuesta** — si se editó archivo, no mostrarlo completo en texto.
+
+## Reglas de seguridad (NO NEGOCIABLES)
+
+8. **Nunca exponer valores de env vars / secrets en el chat** — ni con `cat .env*`, `echo $VAR`, `printenv`, ni cuando el owner los pida explícitamente. Radar tiene 4 secrets en `.env.local` (Supabase URL + 2 keys + CRON_SECRET) que deben tratarse como tóxicos al transcript de sesión. Sugerir alternativas seguras: `pbcopy < .env.local`, abrir en editor, `awk` con `pbcopy`. Si por error se expuso: avisar + rotar (Supabase dashboard "Reset key" + `openssl rand -hex 32` para CRON_SECRET). Trazado en regla global #8 (`~/.claude/CLAUDE.md`).
 
 ## Guardrails activos (NO NEGOCIABLES)
 
