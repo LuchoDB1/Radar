@@ -1,0 +1,93 @@
+# GitHub Actions — CI del proyecto
+#
+# Es la quinta capa de defensa: editor → formatter → pre-commit → CI → smoke boot.
+# Las primeras 4 corren en la máquina del dev; CI corre en server independiente
+# del entorno local — única que enforza universalmente en colaboración cross-machine.
+#
+# Triggers: push a main + cualquier PR.
+# Jobs: verify (lint + typecheck + tests + smoke + e2e-smoke vía `make verify`)
+#       → e2e-full (suite Playwright completa).
+#
+# Stack default: TypeScript/Node 20. Para Python: adaptar setup-node → setup-python
+# y npm ci → pip/uv install. El job `verify` corre `make verify` que abstrae el stack.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: make verify (lint + typecheck + tests + smoke + e2e-smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers (chromium + firefox)
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Run make verify
+        run: make verify
+        env:
+          CI: true
+          # Secrets configurados en GitHub Settings → Secrets and variables → Actions.
+          # Sin estos, el SSR de app/page.tsx tira 500 y `make smoke` falla.
+          # Política: NO skipear smoke por env ausentes — eso debilitaría la 5ta capa.
+          # Si CI falla por env vars faltantes, es señal real (config incompleta).
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+  e2e-full:
+    name: Playwright suite completa
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright suite
+        run: npx playwright test
+        env:
+          CI: true
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
