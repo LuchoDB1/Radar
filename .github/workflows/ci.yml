@@ -22,6 +22,11 @@ on:
 jobs:
   verify:
     name: make verify (lint + typecheck + tests + smoke + e2e-smoke)
+    # Environment "Production" expone los secrets de Supabase + CRON_SECRET.
+    # Sin esta declaración, los secrets del environment NO son accesibles
+    # al workflow → quedan como string vacío y `make smoke` falla con
+    # "Error: supabaseUrl is required". Detectado en CI run 25688607462.
+    environment: Production
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -56,6 +61,7 @@ jobs:
   e2e-full:
     name: Playwright suite completa
     needs: verify
+    environment: Production
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
