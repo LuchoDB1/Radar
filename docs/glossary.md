@@ -1,7 +1,7 @@
 # Glosario — Radar
 
-> Vocabulario derivado de la metáfora *cinta transportadora* (MODEL.md). Define los términos que TODO el sistema usa de forma consistente.
-> Última actualización: 2026-05-05
+> Vocabulario derivado de la metáfora *cinta transportadora* (MODEL.md) y operacionalizado con DDD (Capa 2 — Dominio). Define los términos que TODO el sistema usa de forma consistente.
+> Última actualización: 2026-05-10 (operacionalizado con DDD — ver [domain-model.md](domain-model.md))
 
 ## Cómo usar este glosario
 
@@ -15,6 +15,8 @@
 
 Unidad atómica que circula por la cinta. Un item de feed RSS upstream que pasó por el parser y la categorización. Tiene `id`, `title`, `url` (única), `source`, `publishedAt`, `summary`, `category`.
 
+**Rol DDD**: **única entity del dominio** y **único aggregate root** del contexto `agregacion-de-noticias`. Protege las invariantes I1 (titulo+url requeridos), I2 (categoria asignada al persistir), I3 (unicidad por url). Ver [domain-model.md](domain-model.md).
+
 **Ejemplo**: *"El cron upserteó 87 noticias hoy."*
 
 **Sinónimos a evitar**: artículo, post, entry, item. En el schema SQL aparece como `noticias` (en español) — esa es la única excepción al inglés en código.
@@ -22,6 +24,8 @@ Unidad atómica que circula por la cinta. Un item de feed RSS upstream que pasó
 ### Fuente (`Source`)
 
 Un proveedor RSS de la lista hardcoded en `lib/rss.ts:FEEDS`. Hoy hay 7: The Verge, Ars Technica, VentureBeat, DeepMind, OpenAI, Hugging Face, MIT Tech Review. El tipo TS `Source` es el unión de strings literales en `types/index.ts`.
+
+**Rol DDD**: **value object** del dominio. Inmutable. Cobertura cerrada y curada (regla R1 del modelo). Ver [domain-model.md](domain-model.md).
 
 **Ejemplo**: *"Agregar Anthropic Blog como fuente nueva."*
 
@@ -39,9 +43,32 @@ El recurso XML upstream en una URL. Cada `Source` tiene exactamente un `Feed` (U
 
 Etiqueta inferida por keywords. Hoy hay 6: `Modelos`, `Empresas`, `Research`, `Tools`, `Regulación`, `General`. `General` es el fallback cuando ningún keyword matchea y la `Source` no tiene `sourceDefault`.
 
+**Rol DDD**: **value object** del dominio. Inmutable. Asignación determinística (regla R2 del modelo). Ver [domain-model.md](domain-model.md).
+
+**Convención de naming (HVC2 — fidelidad nombre↔código)**:
+- En docs y conversaciones: `Categoría` (con acento, español natural)
+- En código TypeScript: `Category` (inglés, por convención JS)
+- En SQL (columna de tabla `noticias`): `categoria` (sin acento, por convención de identifiers)
+- La traducción ocurre en [lib/db.ts](../lib/db.ts) en la lectura y en [app/api/cron/route.ts](../app/api/cron/route.ts) en la escritura.
+
 **Ejemplo**: *"OpenAI por default cae en Empresas, salvo que el título tenga 'gpt' o 'claude' (entonces Modelos)."*
 
 **Sinónimos a evitar**: tag, label, topic.
+
+### FechaPublicacion (`publishedAt`)
+
+Timestamp UTC de cuándo la `Fuente` upstream publicó la `Noticia`. Atributo de `Noticia` que ordena la cinta cronológicamente.
+
+**Rol DDD**: **value object** del dominio. Inmutable. No hay concepto de "actualizar fecha de publicación" — si una `Fuente` re-publica con fecha distinta, es información que viene en el feed RSS y se persiste tal cual.
+
+**Convención de naming (HVC2)**:
+- En docs y conversaciones: `FechaPublicacion` o "fecha de publicación"
+- En código TypeScript: `publishedAt` (`Date`)
+- En SQL (columna de tabla `noticias`): `fecha_publicacion` (`timestamptz`)
+
+**Ejemplo**: *"Las noticias se ordenan por `FechaPublicacion` descendente en la Vitrina."*
+
+**Sinónimos a evitar**: `publicada`, `created_at` (este último es el timestamp técnico de inserción en DB, no del dominio).
 
 ### Cron (Vercel Cron)
 
@@ -95,6 +122,20 @@ Convención de Next.js. En `app/api/report/route.ts` indica que la respuesta nun
 | ART | Argentina Time (UTC-3) | Timezone canónico del owner para horarios de cron |
 | SSR | Server-Side Rendering | Cómo `app/page.tsx` se renderiza |
 | ADR | Architecture Decision Record | Archivos en `docs/decisions/` |
+
+## Vocabulario DDD del modelo
+
+Términos del marco DDD que aparecen en `docs/domain-model.md`. Definiciones cortas para devs del proyecto. Vocabulario canónico completo en el repo SDD ([glossary.md](../../spec-driven-development/docs/glossary.md)).
+
+| Término | Definición corta en radar |
+|---|---|
+| **Bounded context** | Frontera donde un término del dominio significa una sola cosa. Radar tiene **1 solo**: `agregacion-de-noticias`. |
+| **Entity** | Cosa con identidad propia que persiste en el tiempo. Radar tiene **1 sola**: `Noticia`. |
+| **Value object** (VO) | Cosa inmutable que vale por su contenido, sin identidad. Radar tiene 3: `Fuente`, `Categoría`, `FechaPublicacion`. |
+| **Aggregate** / **Aggregate root** | Unidad de consistencia. El **root** es la entity por la que se accede al aggregate desde fuera. En radar, `Noticia` es el único aggregate, su único miembro y su propio root. |
+| **Domain event** | Hecho significativo del dominio expresado en pasado (`NoticiaUpserted`, `NoticiaDropped`, `FeedFallido`). Distinto de evento técnico (`HttpRequestReceived`). Hoy en radar son **latentes** (sin consumer real). |
+| **Invariante del dominio** | Regla del dominio que es siempre verdadera, protegida por el aggregate root. En radar: I1, I2, I3 (ver `domain-model.md`). Distinta de constraint técnico (UNIQUE, NOT NULL — esos viven en C6 infra). |
+| **Regla del contexto** | Afirmación del modelo que no se materializa como objeto. En radar: R1 (fuentes curadas), R2 (categorización determinística), R3 (catálogo de origen único). |
 
 ## Términos del ecosistema externo
 
