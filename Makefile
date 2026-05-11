@@ -38,7 +38,13 @@ test-critical:
 	@echo "⚠️  No hay test framework configurado todavía."
 	@exit 0
 
-# Smoke: arranca next dev por 5s y verifica que responde 200 en /
+# Smoke: arranca next dev por 5s y verifica que responde 200 en /.
+# Cleanup robusto: matar `npm` + child `next dev` por nombre + esperar
+# que el puerto 3000 se libere antes de salir. Sin esto, el target
+# siguiente (`e2e-smoke`) que invoca Playwright con `reuseExistingServer:
+# !isCI` (false en CI) choca con un proceso zombi en :3000 y falla con
+# "address already in use". Detectado en CI run 25689237593 (radar
+# 2026-05-11).
 smoke:
 	@echo "→ smoke: arrancando next dev por 5s..."
 	@(npm run dev > /tmp/radar-smoke.log 2>&1 & echo $$! > /tmp/radar-smoke.pid); \
@@ -48,7 +54,13 @@ smoke:
 	else \
 	  echo "❌ smoke FAIL"; cat /tmp/radar-smoke.log; STATUS=1; \
 	fi; \
-	kill $$(cat /tmp/radar-smoke.pid) 2>/dev/null; rm -f /tmp/radar-smoke.pid; exit $$STATUS
+	kill $$(cat /tmp/radar-smoke.pid) 2>/dev/null; \
+	pkill -f "next dev" 2>/dev/null || true; \
+	for i in 1 2 3 4 5; do \
+	  if ! lsof -i :3000 -t >/dev/null 2>&1; then break; fi; \
+	  sleep 1; \
+	done; \
+	rm -f /tmp/radar-smoke.pid; exit $$STATUS
 
 e2e:
 	npx playwright test
