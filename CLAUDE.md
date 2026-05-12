@@ -100,8 +100,23 @@ Ver `~/proyectos/spec-driven-development/commands/` para detalle.
 
 ## Divergencias respecto a SDD canónico
 
-- **ESLint flat config**: radar usa `eslint.config.mjs` (flat config, ESLint 9+) en vez del `.eslintrc.json` que asume el template SDD. Razón en [ADR-0001](docs/decisions/0001-eslint-flat-config.md).
-- **AGENTS.md preservado**: archivo de 3 líneas con reglas de Next.js 16. Se mantiene como complemento de CLAUDE.md (no duplicación). Referenciado desde el `@AGENTS.md` al tope de este archivo.
+> Formato **DIV-NNN estructurado** (vigente desde v2.0.0+ del marco SDD, sistema de updates Fase A). `/upgrade` parsea esta sección. NO cambiar el formato.
+
+### DIV-001 — ESLint flat config
+
+- **Scope**: `templates/guardrails/.eslintrc.json` (no aplica al consumer)
+- **Reason**: radar usa `eslint.config.mjs` (flat config, ESLint 9+) en vez del `.eslintrc.json` que asume el template SDD. Heredado de Next.js 16.
+- **Applicable to**: all
+- **Captured**: 2026-05-05 durante /adopt
+- **ADR**: docs/decisions/0001-eslint-flat-config.md
+
+### DIV-002 — AGENTS.md preservado
+
+- **Scope**: archivo `AGENTS.md` en raíz (no está en templates canónicos del marco)
+- **Reason**: Archivo de 3 líneas con reglas de Next.js 16 que se mantiene como complemento de CLAUDE.md (no duplicación). Referenciado desde el `@AGENTS.md` al tope de CLAUDE.md.
+- **Applicable to**: all
+- **Captured**: 2026-05-05 durante /adopt
+- **ADR**: inline (no amerita ADR formal — quirk de Next.js)
 
 ## Proyectos relacionados
 

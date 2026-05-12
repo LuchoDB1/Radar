@@ -1,0 +1,11 @@
+# .sdd-version — radar consumer SDD adoption tracking
+#
+# Single source of truth de qué versión del marco corre este consumer.
+# Detalle del formato en spec-driven-development/templates/core/.sdd-version + ADR-0011.
+
+sdd_version: v0.1.0
+adopted_at: 2026-05-05
+last_upgrade: null
+divergence_count: 2
+meta_repo: false
+sdd_repo_path: ../spec-driven-development
