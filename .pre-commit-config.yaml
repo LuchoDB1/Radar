@@ -53,6 +53,19 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      # === Strip-local-perms — complementario a Item AA + PIR-7 ===
+      # Claude Code v2.1.137 escribe "Always allow" grants a
+      # .claude/settings.json (project-scope) por default. Sin este hook,
+      # el archivo versionado se contamina con permisos session-locals del
+      # dev. El script stripea allow/ask/deny/additionalDirectories antes
+      # del commit; si modifica, falla y pide re-stage.
+      - id: strip-local-perms
+        name: Strip session-local permissions from .claude/settings.json
+        entry: python3 scripts/strip-local-perms.py
+        language: system
+        files: '^\.claude/settings\.json$'
+        pass_filenames: false
+
 # Hooks comentados hasta que existan los componentes:
 # - prettier: radar no tiene prettier instalado. Si se agrega, descomentar acá y agregar a deps.
 # - tests-critical: radar todavía no tiene unit tests. Activar cuando se sumen (Vitest / Jest).
