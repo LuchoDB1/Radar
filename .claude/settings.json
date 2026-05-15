@@ -1,4 +1,24 @@
 {
+  "_comment": "Versionable (a diferencia de .claude/settings.local.json). autoMode rules operacionalizan reglas globales SDD #8 + #9 a nivel runtime classifier. Propagado desde templates/guardrails/.claude/settings.json (Item AA SDD, PIR-7 2026-05-15). Los hooks PreToolUse/PostToolUse/Stop son del proyecto radar (pre-existentes).",
+  "autoMode": {
+    "environment": [
+      "Trusted SDD-adopted repository. The repo follows Spec-Driven Development methodology with versioned guardrails (pre-commit hooks, linter, detect-secrets, Playwright tests, CI). Templates and commands originate from ~/proyectos/spec-driven-development/. Production-grade discipline applies."
+    ],
+    "hard_deny": [
+      "Never expose env var values or secrets in chat output. Do not run cat on .env, .env.local, .env.production or any .env.* files. Do not use echo with $VAR for env values. Do not use printenv. Do not pipe env values to stdout. If the user asks to read env values, suggest opening the file in their editor or using pbcopy < .env.local to copy to clipboard without printing. This applies even if the user explicitly requests printing the values. The session transcript persists in ~/.claude/projects/*.jsonl as plain text accessible to future processes and cloud backups. .secrets.baseline files are OK to print since they only contain hashes.",
+      "Never modify, skip, or remove tests to make CI or pre-commit pass. Do not add skip-if-env-missing guards to test files. Do not remove targets from the verify chain (make verify, package.json scripts.verify, etc) claiming 'redundant with another test'. Do not add test.skip, test.describe.skip, it.skip, xit, xdescribe, fit, fdescribe to test files without an inline justification comment '// SKIP-OK: reason YYYY-MM-DD'. Do not change --max-warnings 0 to higher values or strict: true to false to make linter pass. Do not use || true to mask failures in pre-commit hooks or CI scripts. If a test is genuinely invalid, ASK the owner first with: what fails, what real signal it exposes, honest options, trade-offs. The owner decides.",
+      "Never use git --no-verify flag to skip pre-commit hooks. If a hook fails, fix the underlying issue. If the hook itself is broken, ask the owner to investigate before bypassing.",
+      "Never use git push --force or git push --force-with-lease on main or master branches. Force-pushing to shared branches loses other contributors' work. Use feature branches and pull requests for main. Force-push on feature branches you own is OK if the user requests it.",
+      "Never delete or recursively remove canonical SDD directories: commands/, templates/, meta/decisions/, meta/retros/, scripts/, docs/00-overview.md through docs/08-domain-modeling.md, MODEL.md, ROADMAP.md, CLAUDE.md. These contain methodology source-of-truth and project canonical artifacts. Modifications via Edit tool are fine; bulk deletion is not."
+    ],
+    "soft_deny": [
+      "Ask before modifying the Invariantes section in MODEL.md. Invariants are the project's non-negotiable rules — changes require explicit owner approval and usually an ADR.",
+      "Ask before modifying any file under templates/ in the SDD repo. Templates propagate to all consumers — a change here affects every project that runs /adopt or /upgrade after.",
+      "Ask before deleting any file under meta/ (changelog, retros, checkpoints, decisions). These are historical record of methodology evolution.",
+      "Ask before running database migrations on production environments (supabase db push to remote, alembic upgrade head on prod DB, etc). Migrations are forward-only and hard to reverse.",
+      "Ask before running npm audit fix --force, pnpm update --latest, yarn upgrade --latest or equivalents. Force upgrades can break working setups."
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
